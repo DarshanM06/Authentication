@@ -5,7 +5,7 @@ A web application for bulk searching case information from the eCourts India por
 ## Project Structure
 
 ```
-Authentication--1/
+Authentication/
 ├── backend/          # FastAPI server + Selenium scraper
 │   ├── main.py       # API endpoints
 │   ├── bot.py        # eCourts search & captcha solver
@@ -33,7 +33,7 @@ Authentication--1/
 
 1. **Start the backend** (in one terminal):
    ```bash
-   cd Authentication--1/backend
+   cd Authentication/backend
    venv\Scripts\activate   # Windows (or source venv/bin/activate on Mac/Linux)
    pip install -r requirements.txt
    uvicorn main:app --reload --port 8000
@@ -41,7 +41,7 @@ Authentication--1/
 
 2. **Start the frontend** (in another terminal):
    ```bash
-   cd Authentication--1/frontend
+   cd Authentication/frontend
    npm install
    npm start
    ```

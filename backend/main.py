@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile
 import pandas as pd
-from backend.bot import search_case
+from bot import search_case
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from datetime import datetime

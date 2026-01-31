@@ -102,7 +102,7 @@ export default function App() {
               <li>Add the case/party names to search</li>
               <li>Upload the file using the button above</li>
               <li>Wait for processing to complete</li>
-              <li>Check the backend folder for results.xlsx</li>
+              <li>Check the results folder for results.xlsx</li>
             </ol>
           </div>
         </div>

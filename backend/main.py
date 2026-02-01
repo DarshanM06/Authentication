@@ -7,6 +7,11 @@ from datetime import datetime
 
 app = FastAPI()
 
+# Use project-relative paths (works on Windows and Linux)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,14 +21,14 @@ app.add_middleware(
 )
 
 # Create folders if they don't exist
-os.makedirs("/Authentication/uploads", exist_ok=True)
-os.makedirs("/Authentication/results", exist_ok=True)
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 @app.post("/bulk")
 async def bulk_search(file: UploadFile):
     try:
-        # Save uploaded file
-        upload_path = f"/Authentication/uploads/{file.filename}"
+        # Save uploaded file with project-relative path
+        upload_path = os.path.join(UPLOADS_DIR, file.filename)
         with open(upload_path, "wb") as f:
             content = await file.read()
             f.write(content)
@@ -40,17 +45,20 @@ async def bulk_search(file: UploadFile):
                 "Cases": " | ".join(cases) if cases else "No cases found"
             })
 
-        # Save results with timestamp
+        # Save results with timestamp in project results folder
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result_filename = f"/Authentication/results/results_{timestamp}.xlsx"
+        result_filename = f"results_{timestamp}.xlsx"
+        result_path = os.path.join(RESULTS_DIR, result_filename)
         result_df = pd.DataFrame(output)
-        result_df.to_excel(result_filename, index=False)
+        result_df.to_excel(result_path, index=False)
         
         return {
             "status": "done",
             "file": result_filename,
+            "file_path": result_path,
             "upload": upload_path,
-            "total_records": len(output)
+            "total_records": len(output),
+            "results": output
         }
     
     except Exception as e:

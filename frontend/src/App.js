@@ -6,6 +6,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [results, setResults] = useState(null);
+  const [filePath, setFilePath] = useState("");
 
   const upload = async () => {
     if (!file) {
@@ -16,6 +18,8 @@ export default function App() {
     
     setLoading(true);
     setMessage("");
+    setResults(null);
+    setFilePath("");
     try {
       const form = new FormData();
       form.append("file", file);
@@ -25,13 +29,18 @@ export default function App() {
         body: form
       });
       
-      if (response.ok) {
-        setMessage("✓ Processing completed! Results saved to results.xlsx");
+      const data = await response.json().catch(() => ({}));
+      
+      if (response.ok && data.status === "done") {
+        setMessage(`✓ Processing completed! ${data.total_records} records processed.`);
         setMessageType("success");
+        setFilePath(data.file_path || data.file || "");
+        setResults(data.results || []);
         setFile(null);
-        document.getElementById("fileInput").value = "";
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput) fileInput.value = "";
       } else {
-        setMessage("✗ Upload failed. Please try again.");
+        setMessage(data.message || "✗ Upload failed. Please try again.");
         setMessageType("error");
       }
     } catch (error) {
@@ -77,6 +86,39 @@ export default function App() {
             </div>
           )}
 
+          {filePath && (
+            <div className="message message-success file-location">
+              <strong>Result file saved to:</strong><br />
+              <code>{filePath}</code>
+            </div>
+          )}
+
+          {results && results.length > 0 && (
+            <div className="results-section">
+              <h3>Results Preview</h3>
+              <div className="results-table-wrapper">
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Cases</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className="name-cell">{row.Name}</td>
+                        <td className="cases-cell">
+                          {row.Cases || "No cases found"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           <button 
             onClick={upload} 
             disabled={loading || !file}
@@ -102,7 +144,7 @@ export default function App() {
               <li>Add the case/party names to search</li>
               <li>Upload the file using the button above</li>
               <li>Wait for processing to complete</li>
-              <li>Check the results folder for results.xlsx</li>
+              <li>Results are saved in the <strong>results</strong> folder with timestamp</li>
             </ol>
           </div>
         </div>

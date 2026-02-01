@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.environ.get("CAPCHA_API_KEY")
 
+# Use project dir for captcha temp file (not CWD which may vary)
+BOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def solve_captcha(image_path):
     try:
         with open(image_path, "rb") as f:
@@ -56,21 +59,39 @@ def search_case(name):
         driver.find_element(By.ID, "partyname").send_keys(name)
 
         captcha_img = driver.find_element(By.ID, "captcha_image")
-        captcha_img.screenshot("captcha.png")
+        captcha_path = os.path.join(BOT_DIR, "captcha.png")
+        captcha_img.screenshot(captcha_path)
 
-        captcha_text = solve_captcha("captcha.png")
+        captcha_text = solve_captcha(captcha_path)
         if not captcha_text:
             return []
 
         driver.find_element(By.ID, "captcha").send_keys(captcha_text)
         driver.find_element(By.ID, "submit").click()
 
-        time.sleep(6)
-
+        # Wait for results to load (up to 10 seconds)
+        time.sleep(5)
         results = []
-        rows = driver.find_elements(By.CLASS_NAME, "case_details")
-        for r in rows:
-            results.append(r.text)
+        
+        # Try multiple selectors - eCourts may use different structures
+        selectors = [
+            (By.CLASS_NAME, "case_details"),
+            (By.CSS_SELECTOR, ".case_details"),
+            (By.CSS_SELECTOR, "table.table-bordered tbody tr"),
+            (By.CSS_SELECTOR, "[class*='case']"),
+        ]
+        
+        for by, selector in selectors:
+            try:
+                rows = driver.find_elements(by, selector)
+                for r in rows:
+                    text = r.text.strip()
+                    if text and len(text) > 5:
+                        results.append(text)
+                if results:
+                    break
+            except Exception:
+                continue
 
         return results
 
@@ -81,6 +102,10 @@ def search_case(name):
     finally:
         if driver:
             driver.quit()
-        # Cleanup captcha image
-        if os.path.exists("captcha.png"):
-            os.remove("captcha.png")
+        # Cleanup captcha image (check both CWD and bot dir)
+        for path in ["captcha.png", os.path.join(BOT_DIR, "captcha.png")]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass

@@ -1,53 +1,28 @@
 from fastapi import FastAPI, UploadFile
 import pandas as pd
-from bot import search_candidate
+from bot import verify_person
 import os
-from datetime import datetime
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
-# app.mount("/results", StaticFiles(directory="results"), name="results")
-
-UPLOADS="uploads"
-RESULTS="results"
-os.makedirs(UPLOADS,exist_ok=True)
-os.makedirs(RESULTS,exist_ok=True)
+os.makedirs("results", exist_ok=True)
+os.makedirs("uploads", exist_ok=True)
 
 @app.post("/bulk")
-async def bulk(file: UploadFile):
-    path=f"{UPLOADS}/{file.filename}"
-    with open(path,"wb") as f:
-        f.write(await file.read())
+async def verify(file: UploadFile):
+    df = pd.read_excel(file.file)
+    output = []
 
-    df=pd.read_excel(path)
-    output=[]
-
-    for _,row in df.iterrows():
-        candidate={
-            "Name":row["Name"],
-            "Father":row["Father"],
-            "City":row["City"],
-            "State":row["State"]
+    for _, row in df.iterrows():
+        candidate = {
+            "Name": row["Name"],
+            "Father": row["Father"],
+            "Address": row["Address"],
+            "DOB": str(row["DOB"])
         }
-        cases=search_candidate(candidate)
-        if cases:
-            for c in cases:
-                output.append({
-                    "Name":candidate["Name"],
-                    "State":c["state"],
-                    "District":c["district"],
-                    "Details":c["raw"]
-                })
-        else:
-            output.append({
-                "Name":candidate["Name"],
-                "State":candidate["State"],
-                "District":"",
-                "Details":"No case found"
-            })
+        result = verify_person(candidate)
+        output.append(result)
 
-    out_file=f"results_{datetime.now().strftime('%H%M%S')}.xlsx"
-    out_path=f"{RESULTS}/{out_file}"
-    pd.DataFrame(output).to_excel(out_path,index=False)
-    return {"file":out_file}
+    out_file = "verification_results.xlsx"
+    out_path = f"results/{out_file}"
+    pd.DataFrame(output).to_excel(out_path, index=False)
+    return {"file": out_file}

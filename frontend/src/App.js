@@ -16,8 +16,8 @@ function App() {
 
   const uploadFile = async () => {
     if (!file) {
-        setErrorMsg("Please upload an Excel file first.");
-        return;
+      setErrorMsg("Please upload an Excel file first.");
+      return;
     }
 
     const formData = new FormData();
@@ -26,7 +26,7 @@ function App() {
     setLoading(true);
     setErrorMsg("");
     setResultFile("");
-    
+
     try {
       const res = await axios.post("http://localhost:8000/bulk", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -47,20 +47,20 @@ function App() {
       </div>
 
       <div className="main-card">
-        
+
         {/* Custom File Uploader */}
         <div className="upload-container">
-            <label htmlFor="file-upload" className="custom-file-upload">
-                <span className="upload-icon">📄</span>
-                <span className="upload-text">{file ? file.name : "Select Excel File (.xlsx)"}</span>
-            </label>
-            <input
-                id="file-upload"
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileChange}
-                disabled={loading}
-            />
+          <label htmlFor="file-upload" className="custom-file-upload">
+            <span className="upload-icon">📄</span>
+            <span className="upload-text">{file ? file.name : "Select Excel File (.xlsx)"}</span>
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleFileChange}
+            disabled={loading}
+          />
         </div>
 
         {/* Error Message */}
@@ -69,45 +69,46 @@ function App() {
         {/* Submit Button */}
         <button className={`submit-btn ${loading ? 'loading' : ''}`} onClick={uploadFile} disabled={loading}>
           {loading ? (
-              <>
-                  <span className="spinner"></span> Processing...
-              </>
+            <>
+              <span className="spinner"></span> Processing...
+            </>
           ) : (
-              "Upload & Search Records"
+            "Upload & Search Records"
           )}
         </button>
 
         {/* Dynamic Results */}
         {resultFile && (
           <div className="success-box">
-             <p>Verification Completed Successfully!</p>
-             <a
-               href={`http://localhost:8000/results/${resultFile}`}
-               target="_blank"
-               rel="noreferrer"
-               className="download-btn"
-             >
-               Download Result Excel
-             </a>
+            <p>Verification Completed Successfully!</p>
+            <a
+              href={`http://localhost:8000/results/${resultFile}`}
+              target="_blank"
+              rel="noreferrer"
+              className="download-btn"
+            >
+              Download Result Excel
+            </a>
           </div>
         )}
 
         {/* Instructions Section */}
         <div className="instructions-section">
-            <h3>How to use:</h3>
-            <ol>
-                <li>Prepare an Excel file (`.xlsx`) containing the candidates you want to verify.</li>
-                <li>Ensure your file has a column named <strong>Name</strong> (mandatory). You can optionally include <strong>Father</strong> and <strong>Address</strong> columns for higher accuracy.</li>
-                <li>Upload the file above and click 'Search'.</li>
-                <li>The system will automatically jumble names to check permutations and bypass captchas in the background.</li>
-                <li>Once complete, a download link will appear for the annotated results.</li>
-            </ol>
+          <h3>How to use:</h3>
+          <ol>
+            <li>Prepare an Excel file (`.xlsx`) containing the candidates you want to verify.</li>
+            <li>Your file <strong>must</strong> contain a column named <strong>Name</strong> (for the search) and a column named <strong>Address</strong> (must include the State and District to unlock the portal's search).</li>
+            <li>You can optionally include a <strong>Father</strong> column to increase the accuracy of the final match.</li>
+            <li>Upload the file above and click 'Search records'.</li>
+            <li>The system will automatically extract locations, jumble names, and search the last 10 years of records.</li>
+            <li>Once complete, a download link will appear for the annotated results.</li>
+          </ol>
         </div>
 
       </div>
-      
+
       <div className="footer">
-          <p>Powered by FastAPI & Selenium</p>
+        <p>Powered by FastAPI & Selenium</p>
       </div>
     </div>
   );

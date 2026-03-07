@@ -1,11 +1,12 @@
+from districts import STATES_DISTRICTS
+
 def extract_state_city(address):
     address = address.lower()
-    states = ["maharashtra", "delhi", "uttar pradesh"]
     state = None
 
-    for s in states:
-        if s in address:
-            state = s.title()
+    for s in STATES_DISTRICTS.keys():
+        if s.lower() in address:
+            state = s
             break
 
     parts = [p.strip() for p in address.split(",")]

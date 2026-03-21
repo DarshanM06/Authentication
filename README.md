@@ -33,15 +33,15 @@ Authentication/
 
 1. **Start the backend** (in one terminal):
    ```bash
-   cd Authentication/backend
-   venv\Scripts\activate   # Windows (or source venv/bin/activate on Mac/Linux)
+   cd backend
+   .\venv\Scripts\activate   
    pip install -r requirements.txt
    uvicorn main:app --reload --port 8000
    ```
 
 2. **Start the frontend** (in another terminal):
    ```bash
-   cd Authentication/frontend
+   cd frontend
    npm install
    npm start
    ```

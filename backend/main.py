@@ -1,11 +1,22 @@
 from fastapi import FastAPI, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import pandas as pd
 from bot import verify_person
 import os
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 os.makedirs("results", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
+app.mount("/results", StaticFiles(directory="results"), name="results")
 
 @app.post("/bulk")
 async def verify(file: UploadFile):
